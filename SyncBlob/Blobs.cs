@@ -62,7 +62,12 @@ namespace SyncBlob {
 			return GetEnumerator();
 		}
 
-		internal void SyncNotAvailable(SourceFiles sourceFiles) {
+		internal void SyncNotAvailable(SourceFiles sourceFiles)
+		{
+			SyncNotAvailable(sourceFiles, null);
+		}
+
+		internal void SyncNotAvailable(SourceFiles sourceFiles, string targetPath) {
 			var toDownload = ToDownload.Empty;
 
 			var blobFiles = new HashSet<RelativePath>(_res.Select(r=>RelativePath.FromBlob(r)));
@@ -70,16 +75,27 @@ namespace SyncBlob {
 			var container = GetContainer(connectionString,containerName);
 
 			foreach(var downloadable in sourceFiles) {
-				if(blobFiles.Contains(downloadable.LocalPath)) {
+				var destinationPath = PrependDestinationPath(downloadable.LocalPath, targetPath);
+				if (blobFiles.Contains(destinationPath))
+				{
 					continue;
-				}				
+				}
 
-				toDownload.Add(new DownloadCommand(downloadable, new BlobDestination(container.GetBlockBlobReference(downloadable.LocalPath.ToString()))));
+				toDownload.Add(new DownloadCommand(downloadable, new BlobDestination(container.GetBlockBlobReference(destinationPath.ToString()))));
 			}
 
-			
-
 			toDownload.Download();
+		}
+
+		private RelativePath PrependDestinationPath(RelativePath filePath, string destinationPath)
+		{
+			var isDestinationPathProvided = !String.IsNullOrEmpty(destinationPath);
+			if (!isDestinationPathProvided)
+			{
+				return filePath;
+			}
+
+			return new RelativePath(String.Format("{0}\\{1}", destinationPath, filePath));
 		}
 	}
 }
