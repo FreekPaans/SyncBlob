@@ -13,6 +13,8 @@ namespace SyncBlob {
 		public string ContainerName{get;set;}
 		[Option("diskLocation", Required=true)]
 		public string OnDiskPath{get;set;}
+		[Option("blobDestinationPath", HelpText="Optional parameter indicating a destination path to sync files to (only applicable when direction=ToBlobStorage)", Required = false)]
+		public string BlobDestinationPath { get; set; }
 
 		[Option("direction", HelpText="ToBlobStorage or FromBlobStorage", Required=true)]
 		public DirectionEnum Direction{get;set;}
